@@ -21,7 +21,7 @@ const server = http.createServer((req, res) => {
     if (!fs.existsSync(images)) {
         fs.mkdirSync(images)
     }
-    const target = path.join(images, query.fileName + '-' + query.fileId + '.' + suffix)
+    const target = path.join(images, query.fileName + '-' + query.fileId + suffix ? '.' + suffix : '')
     function getSlicePath(index) {
         return path.join(folder, query.fileName + '-' + index)
     }
