@@ -25,6 +25,7 @@ fileInput.addEventListener('change', function (e) {
                 fileId: instance.fileId,
                 fileName: instance.fileName,
                 blockIndex: instance.sendIndex + 1,
+                blockLength: instance.blocks.length
             }, {}).then(() => {
                 instance.sendIndex++
                 console.log(`第${instance.sendIndex + 1}块数据上传成功`)
