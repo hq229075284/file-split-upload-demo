@@ -145,6 +145,7 @@ class Upload {
         this.fileName = matched[1]
         this.suffix = matched[2] || ''
         this.fileSize = file.size
+        // TODO:可以尝试file转ArrayBuffer后通过buffer生成hash来作为fileId
         this.fileId = md5(`${file.name}-${file.size}-${file.type}-${Date.now()}`)
         console.log(file.size)
         let last_btyes_index = 0
