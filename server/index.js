@@ -8,14 +8,26 @@ const stream = require('stream');
 const fileMapPath = path.join(__dirname, './fileMap.json')
 // const fileMap = require(fileMapPath)
 const fileMap = {}
-const blockSize = 10 * 1024
+const blockSize = 4 * 1024 * 1024
+// const blockSize = 10 * 1024
 const server = http.createServer((req, res) => {
     const { query } = url.parse(req.url, true)
     const fileId = query.fileId
     const suffix = query.suffix
     const fileSize = query.fileSize
     const blockIndex = query.blockIndex
-    const target = path.join(__dirname, query.fileId + '.' + suffix)
+    const folder = path.join(__dirname, 'pieces', query.fileId)
+    const images = path.join(__dirname, './images')
+    if (!fs.existsSync(images)) {
+        fs.mkdirSync(images)
+    }
+    const target = path.join(images, query.fileName + '-' + query.fileId + '.' + suffix)
+    function getSlicePath(index) {
+        return path.join(folder, query.fileName + '-' + index)
+    }
+    if (!fs.existsSync(folder)) {
+        fs.mkdirSync(folder)
+    }
     if (req.method === "POST") {
         const getInitState = () => ({ length: 0, done: false })
         let fileDescription = fileMap[target]
@@ -34,9 +46,9 @@ const server = http.createServer((req, res) => {
         }
         let lastLength = fileDescription.length
         let totalLength = blockIndex * blockSize
-        let buffers = []
+        // let buffers = []
         req.on('data', function (chunk) {
-            buffers.push(chunk)
+            // buffers.push(chunk)
             // console.log(chunk)
             // const source_stream=new stream.Readable({
             //     highWaterMark:4 * 1024 * 1024,
@@ -54,7 +66,14 @@ const server = http.createServer((req, res) => {
                 // buffers.push(chunk.slice(totalLength - diff, totalLength))
                 lastLength = totalLength
                 fileMap[target].length = lastLength
+                fs.writeFileSync(getSlicePath(blockIndex), chunk)
                 if (totalLength == fileSize) {
+                    for (let i = 0; i <= blockIndex; i++) {
+                        const piece = fs.readFileSync(getSlicePath(i))
+                        fs.appendFileSync(target, piece)
+                        fs.unlinkSync(getSlicePath(i))
+                    }
+                    fs.rmdirSync(folder)
                     fileMap[target].done = true
                 }
                 fs.writeFileSync(fileMapPath, JSON.stringify(fileMap, null, 4), () => { })
@@ -69,13 +88,13 @@ const server = http.createServer((req, res) => {
             // const target_stream = fs.createWriteStream(target)
             // source_stream.pipe(target_stream)
             // fs.writeFileSync(target, buffers)
-            fs.appendFileSync(target, chunk)
+            // fs.appendFileSync(target, chunk)
         })
         req.on('end', function () {
             // fs.writeFileSync(fileMapPath, JSON.stringify(fileMap, null, 4), () => { })
-            if (blockIndex == 4) {
-                console.log('block:', blockIndex, '=>', Buffer.concat(buffers))
-            }
+            // if (blockIndex == 4) {
+            //     console.log('block:', blockIndex, '=>', Buffer.concat(buffers))
+            // }
             res.writeHead(200, {
                 'Access-Control-Allow-Origin': req.headers.origin
             })

@@ -1,0 +1,22 @@
+:root {
+  --color: #795548;
+}
+.container {
+  border: 1px solid;
+  padding: 20px;
+}
+
+.outer {
+  width: 300px;
+  border: 2px solid var(--color);
+  border-radius: 5px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.inner {
+  height: 20px;
+  background-color: var(--color);
+}
+.text {
+  margin: 0 8px;
+}
